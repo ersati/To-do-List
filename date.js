@@ -8,4 +8,3 @@ exports.getDate = () => {
     const day = today.toLocaleDateString('en-US', options)
     return day
 }
-

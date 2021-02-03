@@ -1,22 +1,50 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const data = require('./date')
+const mongoose = require("mongoose")
+// const data = require(__dirname + './date')
 const app = express();
 
 // const jsonParser = bodyParser.json()
-app.use(bodyParser.urlencoded({
-    extended: false
-}))
 app.set('view engine', 'ejs');
+app.use(bodyParser.urlencoded({
+    extended: true
+}))
+app.use(express.static("public"))
 
+mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true})
+
+const itemsSchema = {
+    item: String
+}
+
+const Item = mongoose.model("Ttem", itemsSchema)
+
+
+const task = new Item ({
+    name:"Zebej"
+})
+const task1 = new Item ({
+    name:"bej"
+})
+
+const task2 = new Item ({
+    name:"Ze"
+})
+const defaultTask = [task, task1, task2]
+Item.insertMany(defaultTask, function(err, docs){
+    if(!err){
+     console.log(err)   
+    }else {
+        console.log('succesfully saved default')
+    }
+})
 const dataArr = ['zenek', 'Juziek', 'Zbyszek']
 const workArr = [];
-app.use(express.static("public"))
 app.get('/', function (req, res) {
 
-    const day = data.getDate()
+    // const day = data.getDate()
     res.render('list', {
-        kindDay: day,
+        kindDay: "Today",
         listOftask: dataArr
     })
 })
