@@ -34,72 +34,77 @@ const task2 = new Item({
     name: "Press <--- to delete the file"
 })
 const defaultTask = [task, task1, task2]
-Item.insertMany(defaultTask, function (err, docs) {
-    if (err) {
-        console.log(err + 'problem')
-    } else {
-        console.log('succesfully saved default')
-    }
-})
-const dataArr = ['zenek', 'Juziek', 'Zbyszek']
-const workArr = [];
+
+// const dataArr = ['zenek', 'Juziek', 'Zbyszek']
+// const workArr = [];
 app.get('/', function (req, res) {
-            Item.find({}, function (err, foundItems) {
+    Item.find({}, function (err, foundItems) {
 
-                    if (foundItems.length === 0) {
-                        Item.insertMany(defaultTask, function (err) {
-                                if (err) {
-                                    console.log(err)
-                                } else {
-                                    console.log("Successfully saved default items to DB")
-                                }
-                                })
-                                res.redirect("/")
-                        } else {
-                            res.render('list', {
-                                kindDay: "Today",
-                                listOftask: foundItems
-                            })
-                        }
-
-
-                    })
-                // const day = data.getDate()
-                
-            })
-
-        app.post("/", function (req, res) {
-            const newTask = req.body.newItem;
-            const item = new Item({
-                name: newTask
-            })
-            item.save()
-            res.redirect('/')
-            const btn = req.body.button
-            // console.log(req.body)
-            if (newTask === '' || typeof newTask === undefined || typeof newTask === null) {
-                console.log('empty string');
-                res.redirect('/')
-            } else {
-
-                if (btn === 'Work') {
-                    workArr.push(newTask)
-                    res.redirect('/work')
+        if (foundItems.length === 0) {
+            Item.insertMany(defaultTask, function (err) {
+                if (err) {
+                    console.log(err)
                 } else {
-                    dataArr.push(newTask)
-                    // console.log(newTask)
-                    res.redirect('/')
+                    console.log("Successfully saved default items to DB")
                 }
-
-            }
-        })
-
-        app.get('/work', function (req, res) {
-            res.render('list', {
-                kindDay: 'Work',
-                listOftask: workArr
             })
-        })
+            res.redirect("/")
+        } else {
+            res.render('list', {
+                kindDay: "Today",
+                listOftask: foundItems
+            })
+        }
+
+
+    })
+    // const day = data.getDate()
+
+})
+
+app.post("/", function (req, res) {
+    const newTask = req.body.newItem;
+    const item = new Item({
+        name: newTask
+    })
+    item.save()
+    res.redirect('/')
+    const btn = req.body.button
+    // console.log(req.body)
+    // if (newTask === '' || typeof newTask === undefined || typeof newTask === null) {
+    //     console.log('empty string');
+    //     res.redirect('/')
+    // } else {
+
+    //     if (btn === 'Work') {
+    //         workArr.push(newTask)
+    //         res.redirect('/work')
+    //     } else {
+    //         dataArr.push(newTask)
+    //         // console.log(newTask)
+    //         res.redirect('/')
+    //     }
+
+    // }
+})
+app.post('/delete', function (req, res) {
+    const checkedItemId = req.body.checkbox;
+    Item.findByIdAndRemove(checkedItemId, (err) => {
+        if (err) {
+            console.log(err)
+        } else {
+            console.log('delete item')
+            res.redirect('/')
+        }
+
+    })
+})
+app.get('/work', function (req, res) {
+    res.render('list', {
+        kindDay: 'Work',
+        listOftask: workArr
+    })
+})
 
 
 
@@ -107,6 +112,6 @@ app.get('/', function (req, res) {
 
 
 
-        app.listen(3000, function () {
-            console.log('pete servers works')
-        })
+app.listen(3000, function () {
+    console.log('pete servers works')
+})
