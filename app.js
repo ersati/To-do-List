@@ -1,10 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const mongoose = require("mongoose")
-// const data = require(__dirname + './date')
+const mongoose = require("mongoose");
+const _ = require("lodash");
 const app = express();
 
-// const jsonParser = bodyParser.json()
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({
     extended: true
@@ -35,8 +34,14 @@ const task2 = new Item({
 })
 const defaultTask = [task, task1, task2]
 
-// const dataArr = ['zenek', 'Juziek', 'Zbyszek']
-// const workArr = [];
+
+const listSchema = {
+    name: String,
+    items: [itemsSchema]
+}
+
+const List = mongoose.model("List", listSchema)
+
 app.get('/', function (req, res) {
     Item.find({}, function (err, foundItems) {
 
@@ -55,61 +60,85 @@ app.get('/', function (req, res) {
                 listOftask: foundItems
             })
         }
-
-
     })
-    // const day = data.getDate()
-
 })
+
+
+app.get('/:paramName', function (req, res) {
+
+    const paramName = _.capitalize(req.params.paramName);
+
+    List.findOne({
+        name: paramName
+    }, function (err, foundList) {
+        if (!err) {
+            if (!foundList) {
+                const list = new List({
+                    name: paramName,
+                    items: defaultTask,
+                })
+                list.save()
+                res.redirect(`/${paramName}`)
+            } else {
+                res.render("list", {
+                    kindDay: foundList.name,
+                    listOftask: foundList.items
+                })
+            }
+        }
+    })
+})
+
 
 app.post("/", function (req, res) {
     const newTask = req.body.newItem;
+    const listName = req.body.list
     const item = new Item({
         name: newTask
     })
-    item.save()
-    res.redirect('/')
-    const btn = req.body.button
-    // console.log(req.body)
-    // if (newTask === '' || typeof newTask === undefined || typeof newTask === null) {
-    //     console.log('empty string');
-    //     res.redirect('/')
-    // } else {
 
-    //     if (btn === 'Work') {
-    //         workArr.push(newTask)
-    //         res.redirect('/work')
-    //     } else {
-    //         dataArr.push(newTask)
-    //         // console.log(newTask)
-    //         res.redirect('/')
-    //     }
+    if (listName === "Today") {
+        item.save()
+        res.redirect('/')
 
-    // }
+    } else {
+        List.findOne({
+            name: listName
+        }, function (err, foundList) {
+            foundList.items.push(item)
+            foundList.save();
+            res.redirect(`/${listName}`)
+        })
+    }
 })
 app.post('/delete', function (req, res) {
     const checkedItemId = req.body.checkbox;
-    Item.findByIdAndRemove(checkedItemId, (err) => {
-        if (err) {
-            console.log(err)
-        } else {
-            console.log('delete item')
-            res.redirect('/')
-        }
+    const listName = req.body.listName;
+    if (listName === "Today") {
+        Item.findByIdAndRemove(checkedItemId, (err) => {
+            if (err) {
+                console.log(err)
+            } else {
+                res.redirect('/')
+            }
 
-    })
+        })
+    } else {
+        List.findOneAndUpdate({
+            name: listName
+        }, {
+            $pull: {
+                items: {
+                    _id: checkedItemId
+                }
+            }
+        }, function (err, foundList) {
+            if (!err) {
+                res.redirect(`/${listName}`)
+            }
+        })
+    }
 })
-app.get('/work', function (req, res) {
-    res.render('list', {
-        kindDay: 'Work',
-        listOftask: workArr
-    })
-})
-
-
-
-
-
 
 
 app.listen(3000, function () {

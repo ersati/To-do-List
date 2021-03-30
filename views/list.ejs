@@ -12,12 +12,13 @@
         <input type="checkbox" name="checkbox" value="<%= item._id%>"id="" onChange="this.form.submit()">
         <p> <%=  item.name%></p>
     </div>
+    <input type="hidden" name="listName" value="<%= kindDay%>"></input>
 </form>
     <%})%>
 
     <form class="item" action="/" method="post">
         <input type="text" name="newItem" id="" placeholder="new item">
-        <button type="submit" name="button" value=<%=kindDay%>>+</button>
+        <button type="submit" name="list" value=<%=kindDay%>>+</button>
         </form>
 </div>
 <%- include('footer'); -%>
