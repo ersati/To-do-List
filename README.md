@@ -11,7 +11,9 @@ Project made in Node js used express body parser and ejs
 - NodeJs
 - Express
 - Mongo DataBase
+- Mongoose
 - Body-Parser
+- Lodash
 
 ## Links
 
